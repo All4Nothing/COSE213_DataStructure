@@ -11,13 +11,13 @@
 typedef struct node
 {
 	int data;
-	struct node *left;
-	struct node *right;
+	struct node* left;
+	struct node* right;
 } NODE;
 
 typedef struct
 {
-	NODE *root;
+	NODE* root;
 } TREE;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -27,10 +27,10 @@ typedef struct
 	return	head node pointer
 			NULL if overflow
 */
-TREE *BST_Create(void)
+TREE* BST_Create(void)
 {
-	TREE *newTree = (TREE *)malloc(sizeof(TREE));
-	NODE *newNode = (NODE *)malloc(sizeof(NODE));
+	TREE* newTree = (TREE*)malloc(sizeof(TREE));
+	NODE* newNode = (NODE*)malloc(sizeof(NODE));
 	newTree->root = newNode;
 
 	if (!newTree || !newNode)
@@ -42,34 +42,33 @@ TREE *BST_Create(void)
 
 /* Deletes all data in tree and recycles memory
  */
-void BST_Destroy(TREE *pTree)
+void BST_Destroy(TREE* pTree)
 {
 	_destroy(pTree->root);
 }
 
 /* internal function (not mandatory)
  */
-static void _destroy(NODE *root)
+static void _destroy(NODE* root)
 {
 	if (root->left != NULL)
 	{
-		return _destroy(root->left);
+		_destroy(root->left);
 	}
 	if (root->right != NULL)
 	{
-		return _destroy(root->right);
+		_destroy(root->right);
 	}
-
-	return free(root);
+	free(root);
 }
 
 /* Inserts new data into the tree
 	return	1 success
 			0 overflow
 */
-int BST_Insert(TREE *pTree, int data)
+int BST_Insert(TREE* pTree, int data)
 {
-	NODE *newPtr = _makeNode(data);
+	NODE* newPtr = _makeNode(data);
 	if (!newPtr)
 		return 0;
 	_insert(pTree->root, newPtr);
@@ -78,7 +77,7 @@ int BST_Insert(TREE *pTree, int data)
 
 /* internal function (not mandatory)
  */
-static void _insert(NODE *root, NODE *newPtr)
+static void _insert(NODE* root, NODE* newPtr)
 {
 	if (!root)
 	{
@@ -96,9 +95,9 @@ static void _insert(NODE *root, NODE *newPtr)
 	}
 }
 
-NODE *_makeNode(int data)
+NODE* _makeNode(int data)
 {
-	NODE *new = (NODE *)malloc(sizeof(NODE));
+	NODE* new = (NODE*)malloc(sizeof(NODE));
 	new->data = data;
 	new->left = NULL;
 	new->right = NULL;
@@ -109,9 +108,9 @@ NODE *_makeNode(int data)
 	return	1 success
 			0 not found
 */
-int BST_Delete(TREE *pTree, int dltKey)
+int BST_Delete(TREE* pTree, int dltKey)
 {
-	int *success = (int *)malloc(sizeof(int));
+	int* success = (int*)malloc(sizeof(int));
 
 	_delete(pTree->root, dltKey, success);
 }
@@ -120,7 +119,7 @@ int BST_Delete(TREE *pTree, int dltKey)
 	success is 1 if deleted; 0 if not
 	return	pointer to root
 */
-static NODE *_delete(NODE *root, int dltKey, int *success)
+static NODE* _delete(NODE* root, int dltKey, int* success)
 {
 	if (dltKey < root->data)
 		return _delete(root->left, dltKey, success);
@@ -143,7 +142,7 @@ static NODE *_delete(NODE *root, int dltKey, int *success)
 	}
 	else
 	{
-		NODE *key = (NODE *)malloc(sizeof(NODE));
+		NODE* key = (NODE*)malloc(sizeof(NODE));
 		key = root->right;
 		while (!key->left)
 		{
@@ -158,9 +157,9 @@ static NODE *_delete(NODE *root, int dltKey, int *success)
 	return	address of data of the node containing the key
 			NULL not found
 */
-int *BST_Retrieve(TREE *pTree, int key)
+int* BST_Retrieve(TREE* pTree, int key)
 {
-	NODE *temp = (NODE *)malloc(sizeof(NODE));
+	NODE* temp = (NODE*)malloc(sizeof(NODE));
 	temp = _retrieve(pTree->root, key);
 	if (!temp)
 		return NULL;
@@ -174,7 +173,7 @@ int *BST_Retrieve(TREE *pTree, int key)
 	return	address of the node containing the key
 			NULL not found
 */
-static NODE *_retrieve(NODE *root, int key)
+static NODE* _retrieve(NODE* root, int key)
 {
 	if (!root)
 	{
@@ -191,11 +190,11 @@ static NODE *_retrieve(NODE *root, int key)
 
 /* prints tree using inorder traversal
  */
-void BST_Traverse(TREE *pTree)
+void BST_Traverse(TREE* pTree)
 {
 	_traverse(pTree->root);
 }
-static void _traverse(NODE *root)
+static void _traverse(NODE* root)
 {
 	if (!root->left)
 		_traverse(root->left);
@@ -208,14 +207,14 @@ static void _traverse(NODE *root)
 
 /* Print tree using inorder right-to-left traversal
  */
-void printTree(TREE *pTree)
+void printTree(TREE* pTree)
 {
 	int level = 0;
 	_inorder_print(pTree->root, level);
 }
 /* internal traversal function
  */
-static void _inorder_print(NODE *root, int level)
+static void _inorder_print(NODE* root, int level)
 {
 	if (!root->right)
 	{
@@ -227,7 +226,7 @@ static void _inorder_print(NODE *root, int level)
 	{
 		printf("\t");
 	}
-	printf("%d \n", root->data);
+	printf("%d", root->data);
 
 	if (!root->left)
 	{
@@ -239,7 +238,7 @@ static void _inorder_print(NODE *root, int level)
 /*
 	return 1 if the tree is empty; 0 if not
 */
-int BST_Empty(TREE *pTree)
+int BST_Empty(TREE* pTree)
 {
 	if (!pTree->root)
 		return 1;
@@ -247,10 +246,10 @@ int BST_Empty(TREE *pTree)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
 	int mode; // input mode
-	TREE *tree;
+	TREE* tree;
 	int data;
 
 	if (argc != 2)
@@ -259,7 +258,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	FILE *fp;
+	FILE* fp;
 
 	if ((fp = fopen(argv[1], "rt")) == NULL)
 	{
