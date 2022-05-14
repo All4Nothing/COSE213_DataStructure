@@ -211,12 +211,13 @@ TREE *BST_Create(void)
 {
 	TREE *newTree = (TREE *)malloc(sizeof(TREE));
 	NODE *newNode = (NODE *)malloc(sizeof(NODE));
-	newTree->root = newNode;
+	
 
-	if (!newTree || !newNode)
+	if (newTree == NULL || newNode == NULL )
 	{
 		return NULL;
 	}
+	newTree->root = newNode;
 	return newTree;
 }
 
@@ -233,11 +234,11 @@ static void _destroy(NODE *root)
 {
 	if (root->left != NULL)
 	{
-		return _destroy(root->left);
+		_destroy(root->left);
 	}
 	if (root->right != NULL)
 	{
-		return _destroy(root->right);
+		_destroy(root->right);
 	}
 
 	free(root);
@@ -250,7 +251,7 @@ static void _destroy(NODE *root)
 int BST_Insert(TREE *pTree, int data)
 {
 	NODE *newPtr = _makeNode(data);
-	if (!newPtr)
+	if (newPtr == NULL)
 		return 0;
 	_insert(pTree->root, newPtr);
 	return 1;
@@ -260,25 +261,56 @@ int BST_Insert(TREE *pTree, int data)
  */
 static void _insert(NODE *root, NODE *newPtr)
 {
-	if (!root)
-	{
-		root = newPtr;
-		// return newPtr;
+	NODE* current = (NODE *)malloc(sizeof(NODE));
+	NODE* parent = (NODE *)malloc(sizeof(NODE));
+	if(current == NULL || parent == NULL){
+		return ;
 	}
 
-	if (newPtr->data < root->data)
-	{
-		return _insert(root->left, newPtr);
+	parent = root;
+
+	if(parent == NULL){
+		root = newPtr;
 	}
-	else
-	{ // newPtr->data >= root->data
-		return _insert(root->right, newPtr);
+
+	while(parent != NULL){
+		current = parent;
+		if(newPtr->data < parent->data){
+			parent = parent -> left;
+		} else{
+			parent = parent->right;
+		}
 	}
+
+	if(newPtr -> data < current -> data){
+		current -> left = newPtr; 
+	} else{
+		current->right = newPtr;
+	}
+	free(current);
+	free(parent);
+
+	// if (!root)
+	// {
+	// 	root = newPtr;
+	// }
+
+	// if (newPtr->data < root->data)
+	// {
+	// 	return _insert(root->left, newPtr);
+	// }
+	// else
+	// { // newPtr->data >= root->data
+	// 	return _insert(root->right, newPtr);
+	// }
 }
 
 NODE *_makeNode(int data)
 {
 	NODE *new = (NODE *)malloc(sizeof(NODE));
+	if(new == NULL){
+		return 0;
+	}
 	new->data = data;
 	new->left = NULL;
 	new->right = NULL;
@@ -341,9 +373,19 @@ static NODE *_delete(NODE *root, int dltKey, int *success)
 // BST_Retrieve를 insert와 delete에 사용?
 int *BST_Retrieve(TREE *pTree, int key)
 {
-	
-	temp = _retrieve(pTree->root, key);
-	return temp->data;
+	NODE* find = (NODE *)malloc(sizeof(NODE));
+	if(find == NULL){
+		return 0;
+	}
+	int pData;
+
+	if(pTree != NULL)
+		find = _retrieve(pTree -> root, key);
+	if(find == NULL)
+		return NULL;
+	pData = find-> data;
+	free(find);
+	return &(pData); // local 변수 반환 X. 포인터 찾자
 }
 
 /* internal function
@@ -359,9 +401,9 @@ static NODE *_retrieve(NODE *root, int key)
 	}
 
 	if (key < root->data)
-		_retrieve(root->left, key);
+		return _retrieve(root->left, key);
 	else if (key > root->data)
-		_retrieve(root->right, key);
+		return _retrieve(root->right, key);
 	else
 		return root;
 }
