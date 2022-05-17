@@ -316,9 +316,11 @@ NODE *_makeNode(int data)
 */
 int BST_Delete(TREE *pTree, int dltKey)
 {
-	int *success = (int *)malloc(sizeof(int));
+	int success;
 
-	_delete(pTree->root, dltKey, success);
+	if(pTree -> root != NULL){
+		_delete(pTree->root, dltKey, &success);
+	}
 }
 
 /* internal function
@@ -327,36 +329,41 @@ int BST_Delete(TREE *pTree, int dltKey)
 */
 static NODE *_delete(NODE *root, int dltKey, int *success)
 {
+	if(root == NULL){
+		*success = 0;
+		return NULL;
+	}
+
 	if (dltKey < root->data)
-		return _delete(root->left, dltKey, success);
+		_delete(root->left, dltKey, success);
 	else if (dltKey > root->data)
-		return _delete(root->right, dltKey, success);
-	else if (!root->left)
-	{
-		root->data = root->right->data;
-		*success = 1;
-		free(root->right);
-		return root;
-		// free ? malloc temp?
-	}
-	else if (!root->right)
-	{
-		root->data = root->left->data;
-		*success = 1;
-		free(root->left);
-		return root;
-	}
-	else
-	{
-		NODE *key = (NODE *)malloc(sizeof(NODE));
-		key = root->right;
-		while (!key->left)
+		_delete(root->right, dltKey, success);
+	else 
+		if (root->left == NULL)
 		{
-			key = root->left;
+			root->data = root->right->data;
+			*success = 1;
+			free(root->right);
+			return root;
 		}
-		root->data = key->data;
-		free(key);
-	}
+		else if (root->right == NULL)
+		{
+			root->data = root->left->data;
+			*success = 1;
+			free(root->left);
+			return root;
+		}
+		else
+		{
+			NODE *right_smallest;
+			right_smallest = root->right;
+			while (right_smallest->left != NULL)
+			{
+				right_smallest = right_smallest -> left;
+			}
+			root->data = right_smallest->data;
+			
+		}
 }
 
 /* Retrieve tree for the node containing the requested key
