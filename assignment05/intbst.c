@@ -229,23 +229,27 @@ TREE *BST_Create(void)
  */
 void BST_Destroy(TREE *pTree)
 {
-	_destroy(pTree->root);
+	if (pTree != NULL)
+	{
+		_destroy(pTree->root);
+	}
+	free(pTree);
 }
 
 /* internal function (not mandatory)
  */
 static void _destroy(NODE *root)
 {
-	if (root->left != NULL)
+	if (root != NULL)
 	{
 		_destroy(root->left);
-	}
-	if (root->right != NULL)
-	{
 		_destroy(root->right);
+		free(root);
 	}
-
-	free(root);
+	else
+	{
+		return;
+	}
 }
 
 /* Inserts new data into the tree
@@ -271,29 +275,29 @@ int BST_Insert(TREE *pTree, int data)
  */
 static void _insert(NODE *root, NODE *newPtr) // root에 NULL값이 들어오면 위치 알려줄 수 없음. 함수의 parameter는 함수의 stack에 저장됨.
 {
-	NODE *p;
-	NODE *t;
+	NODE *parent;
+	NODE *current;
 
-	p = root;
+	parent = root;
 
-	while (p != NULL)
+	while (parent != NULL)
 	{
-		if (newPtr->data < p->data)
+		if (newPtr->data < parent->data)
 		{
-			t = p;
-			p = p->left;
+			current = parent;
+			parent = parent->left;
 		}
 		else
 		{
-			t = p;
-			p = p->right;
+			current = parent;
+			parent = parent->right;
 		}
 	}
 
-	if (newPtr->data < t->data)
-		t->left = newPtr;
+	if (newPtr->data < current->data)
+		current->left = newPtr;
 	else
-		t->right = newPtr;
+		current->right = newPtr;
 	return;
 }
 
@@ -317,10 +321,30 @@ NODE *_makeNode(int data)
 int BST_Delete(TREE *pTree, int dltKey)
 {
 	int success;
+	NODE *temp;
 
-	if(pTree -> root != NULL){
-		_delete(pTree->root, dltKey, &success);
+	if (pTree->root != NULL)
+	{
+		if (pTree->root->data == dltKey && pTree->root->left == NULL)
+		{
+			temp = pTree->root->right;
+			free(pTree->root);
+			pTree->root = temp;
+			success = 1;
+		}
+		else if (pTree->root->data == dltKey && pTree->root->right == NULL)
+		{
+			temp = pTree->root->left;
+			free(pTree->root);
+			pTree->root = temp;
+			success = 1;
+		}
+		else
+		{
+			_delete(pTree->root, dltKey, &success);
+		}
 	}
+	return success;
 }
 
 /* internal function
@@ -329,41 +353,44 @@ int BST_Delete(TREE *pTree, int dltKey)
 */
 static NODE *_delete(NODE *root, int dltKey, int *success)
 {
-	if(root == NULL){
+	NODE *temp;
+	if (root == NULL)
+	{
 		*success = 0;
 		return NULL;
 	}
 
 	if (dltKey < root->data)
-		_delete(root->left, dltKey, success);
+		root->left = _delete(root->left, dltKey, success);
 	else if (dltKey > root->data)
-		_delete(root->right, dltKey, success);
-	else 
-		if (root->left == NULL)
+		root->right = _delete(root->right, dltKey, success);
+	else if (root->left == NULL)
+	{
+		temp = root->right;
+		free(root);
+		root = temp;
+		*success = 1;
+	}
+	else if (root->right == NULL)
+	{
+		temp = root->left;
+		free(root);
+		root = temp;
+		*success = 1;
+	}
+	else
+	{
+		NODE *right_smallest;
+		right_smallest = root->right;
+		while (right_smallest->left != NULL)
 		{
-			root->data = root->right->data;
-			*success = 1;
-			free(root->right);
-			return root;
+			right_smallest = right_smallest->left;
 		}
-		else if (root->right == NULL)
-		{
-			root->data = root->left->data;
-			*success = 1;
-			free(root->left);
-			return root;
-		}
-		else
-		{
-			NODE *right_smallest;
-			right_smallest = root->right;
-			while (right_smallest->left != NULL)
-			{
-				right_smallest = right_smallest -> left;
-			}
-			root->data = right_smallest->data;
-			
-		}
+		root->data = right_smallest->data;
+		root->right = _delete(root->right, right_smallest->data, success);
+		*success = 1;
+	}
+	return root;
 }
 
 /* Retrieve tree for the node containing the requested key
@@ -394,7 +421,7 @@ int *BST_Retrieve(TREE *pTree, int key)
 */
 static NODE *_retrieve(NODE *root, int key)
 {
-	if (!root)
+	if (root == NULL)
 	{
 		return NULL;
 	}
