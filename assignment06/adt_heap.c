@@ -3,22 +3,12 @@
 
 #include "adt_heap.h"
 
-/*
-typedef struct
-{
-    void **heapArr;
-    int	last;
-    int	capacity;
-    int (*compare) (void *arg1, void *arg2);
-} HEAP;
-*/
-
 /* Reestablishes heap by moving data in child up to correct location heap array
  */
 // index = heap->last
 static void _reheapUp(HEAP *heap, int index)
 {
-    while (index != 0 && heap->compare(heap->heapArr[index], heap->heapArr[(index - 1) / 2]))
+    while (index != 0 && heap->compare(heap->heapArr[index], heap->heapArr[(index - 1) / 2]) > 0)
     {
         void *temp;
         temp = heap->heapArr[index];
@@ -35,8 +25,8 @@ static void _reheapUp(HEAP *heap, int index)
 // left = 2i + 1, right = 2i + 2
 static void _reheapDown(HEAP *heap, int index)
 {
-    void *left_subtree = NULL;
-    void *right_subtree = NULL;
+    void *left_subtree;
+    void *right_subtree;
     int largest;
 
     if (index * 2 + 1 <= heap->last)
@@ -46,16 +36,18 @@ static void _reheapDown(HEAP *heap, int index)
         if (index * 2 + 2 <= heap->last)
         {
             right_subtree = heap->heapArr[index * 2 + 2];
-        }
-
-        // set largest index
-        if (heap->compare(left_subtree, right_subtree) > 0)
-        {
-            largest = index * 2 + 1;
+            if (heap->compare(left_subtree, right_subtree) > 0)
+            {
+                largest = index * 2 + 1;
+            }
+            else
+            {
+                largest = index * 2 + 2;
+            }
         }
         else
         {
-            largest = index * 2 + 2;
+            largest = index * 2 + 1;
         }
 
         if (heap->compare(heap->heapArr[index], heap->heapArr[largest]) < 0)
@@ -110,16 +102,38 @@ void heap_Destroy(HEAP *heap)
 /* Inserts data into heap
 return 1 if successful; 0 if heap full
 */
-// TODO
-// FIXME
-int heap_Insert(HEAP *heap, void *dataPtr);
+int heap_Insert(HEAP *heap, void *dataPtr)
+{
+    heap->last++;
+    if (heap->last == heap->capacity)
+    {
+        heap->heapArr = (void **)realloc(heap->heapArr, sizeof(void *) * heap->capacity * 2);
+        heap->capacity *= 2;
+    }
+
+    heap->heapArr[heap->last] = dataPtr;
+    _reheapUp(heap, heap->last);
+
+    return 1;
+}
 
 /* Deletes root of heap and passes data back to caller
 return 1 if successful; 0 if heap empty
 */
-// TODO
-// FIXME
-int heap_Delete(HEAP *heap, void **dataOutPtr);
+int heap_Delete(HEAP *heap, void **dataOutPtr)
+{
+    if (heap->last == -1)
+    {
+        return 0;
+    }
+
+    *dataOutPtr = heap->heapArr[0];
+    heap->heapArr[0] = heap->heapArr[heap->last];
+    heap->last--;
+    _reheapDown(heap, 0);
+
+    return 1;
+}
 
 /*
 return 1 if the heap is empty; 0 if not
@@ -139,7 +153,7 @@ int heap_Empty(HEAP *heap)
 /* Print heap array */
 void heap_Print(HEAP *heap, void (*print_func)(void *data))
 {
-    for (int i = 0; i < heap->last; i++)
+    for (int i = 0; i <= heap->last; i++)
     {
         print_func(heap->heapArr[i]);
     }
