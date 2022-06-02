@@ -174,3 +174,200 @@ int main( int argc, char **argv)
 	return 0;
 }
 
+
+/* Allocates dynamic memory for a AVL_TREE head node and returns its address to caller
+	return	head node pointer
+			NULL if overflow
+*/
+// TODO
+AVL_TREE *AVL_Create( void){
+	AVL_TREE *newTree = (AVL_TREE *)malloc(sizeof(AVL_TREE));
+	
+	if(newTree == NULL){
+		return NULL;
+	}
+
+	newTree -> root = NULL;
+	newTree -> count = 0;
+
+	return newTree;
+}
+
+/* Deletes all data in tree and recycles memory
+*/
+void AVL_Destroy( AVL_TREE *pTree){
+	if(pTree != NULL){
+		_destroy(pTree->root);
+	}
+
+	free(pTree);
+}
+
+static void _destroy( NODE *root){
+	if(root != NULL){
+		_destroy(root->left);
+		_destroy(root->right);
+		free(root);
+	}
+	else{
+		return;
+	}
+}
+
+/* Inserts new data into the tree
+	return	1 success
+			0 overflow
+*/
+int AVL_Insert( AVL_TREE *pTree, char *data){
+	NODE *newPtr = _makeNode(data);
+
+	if(newPtr == NULL){
+		return 0;
+	}
+
+	pTree->root = _insert(pTree->root, newPtr);
+	pTree->count++;
+
+	return 1;
+}
+
+/* internal function
+	This function uses recursion to insert the new data into a leaf node
+	return	pointer to new root
+*/
+static NODE *_insert( NODE *root, NODE *newPtr){
+	NODE *parent;
+	NODE *current;
+
+	current = root;
+	// insert
+	if(root == NULL)
+	{
+		return newPtr;
+	}
+
+	if(strcmp(newPtr->data, root->data) < 0)
+	{
+		root -> left = _insert(root->left, newPtr);
+		root->height=max(getHeight(root->left), getHeight(root->right)) + 1;
+	}
+	else
+	{
+		root -> right = _insert(root->right, newPtr);
+		root->height=max(getHeight(root->left), getHeight(root->right)) + 1;
+	}
+
+	// TODO balancing
+	// LH: +1, EH: 0,RH: -1
+	if(BALANCING)
+	{
+		int balFactor = getHeight(root->left) - getHeight(root->right);
+		if(balFactor > 1)
+		{
+			//LH
+			if(getHeight(root->left->left) - getHeight(root->left->right) > 0) // left of left
+			{
+				rotateRight(root);
+			}
+			else // right of left
+			{
+				rotateLeft(root->left);
+			}
+		}
+	}
+
+
+	
+}
+
+static NODE *_makeNode( char *data){
+	NODE *newNode = (NODE *)malloc(sizeof(NODE));
+
+	if( newNode == NULL)
+	{
+		return NULL;
+	}
+
+	newNode -> data = strdup(data);
+	newNode->left = NULL;
+	newNode->right = NULL;
+	newNode->height = 1;
+
+}
+
+/* Retrieve tree for the node containing the requested key
+	return	address of data of the node containing the key
+			NULL not found
+*/
+// TODO
+char *AVL_Retrieve( AVL_TREE *pTree, char *key);
+
+/* internal function
+	Retrieve node containing the requested key
+	return	address of the node containing the key
+			NULL not found
+*/
+// TODO
+static NODE *_retrieve( NODE *root, char *key);
+
+/* Prints tree using inorder traversal
+*/
+// TODO
+void AVL_Traverse( AVL_TREE *pTree);
+// TODO
+static void _traverse( NODE *root);
+
+/* Prints tree using inorder right-to-left traversal
+*/
+// TODO
+void printTree( AVL_TREE *pTree);
+/* internal traversal function
+*/
+// TODO
+static void _infix_print( NODE *root, int level);
+
+/* internal function
+	return	height of the (sub)tree from the node (root)
+*/
+static int getHeight( NODE *root){
+	if(root == NULL)
+	{
+		return 0;
+	}
+	else
+	{
+		return root->height;
+	}
+
+}
+
+/* internal function
+	Exchanges pointers to rotate the tree to the right
+	updates heights of the nodes
+	return	new root
+*/
+// TODO
+static NODE *rotateRight( NODE *root){
+	NODE *leftNode = root->left;
+	if(root->left->right == NULL)
+	{
+		root->left->right = root;
+		root->left = NULL;
+		 
+	}
+	else
+	{
+		NODE *temp = root->left->right;
+		root->left->right = root;
+		root->left = temp;
+	}
+
+}
+
+/* internal function
+	Exchanges pointers to rotate the tree to the left
+	updates heights of the nodes
+	return	new root
+*/
+// TODO
+static NODE *rotateLeft( NODE *root);
