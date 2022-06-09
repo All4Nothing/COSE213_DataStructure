@@ -118,7 +118,6 @@ int main(int argc, char **argv)
 	
 	fclose( fp);
 	
-	printf( "\nQuery: ");
 	while (fscanf( stdin, "%s", str) != EOF)
 	{
 		// wildcard search term
@@ -158,6 +157,7 @@ TRIE *trieCreateNode(void){
 	}
 
 	newTRIE -> index = -1;
+
 	for(int i=0; i<MAX_DEGREE; i++)
 	{
 		newTRIE -> subtrees[i] = NULL;
@@ -184,10 +184,45 @@ void trieDestroy( TRIE *root){
 			0 failure
 */
 // 주의! 엔트리를 중복 삽입하지 않도록 체크해야 함
-// 대소문자를 소문자로 통일하여 삽입
+// 대소문자를 소문자로 통일하여 삽입: isupper, tolower
 // 영문자와 EOW 외 문자를 포함하는 문자열은 삽입하지 않음
-// TODO
-int trieInsert( TRIE *root, char *str, int dic_index);
+int trieInsert( TRIE *root, char *str, int dic_index){
+	TRIE *node = root;
+
+	// isupper, tolower
+	for(int i=0; i<strlen(str);i++)
+	{
+		if(isupper(str[i]) == 0)
+		{
+			str[i] = tolower(str[i]);
+		}
+
+		if(getIndex(str[i]) <0 || getIndex(str[i]) > 26) // getIndex(EOW) = 26
+		{
+			return 0;
+		}
+	}
+
+	// insert
+	for(int i=0; i<strlen(str); i++)
+	{
+		int index = getIndex(str[i]);
+
+		if(node-> subtrees[index] == NULL)
+		{
+			node-> subtrees[index] = trieCreateNode();
+		}
+		node = node -> subtrees[index];
+	}
+
+	// check overlap
+	if(node -> index != -1)
+	{
+		return 0;
+	}
+
+	node -> index = dic_index;
+}
 
 /* Retrieve trie for the requested key
 	return	index in dictionary (trie) if key found
