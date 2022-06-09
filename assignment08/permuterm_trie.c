@@ -145,3 +145,84 @@ int main(int argc, char **argv)
 	return 0;
 }
 
+/* Allocates dynamic memory for a trie node and returns its address to caller
+	return	node pointer
+			NULL if overflow
+*/
+TRIE *trieCreateNode(void){
+	TRIE *newTRIE = (TRIE *)malloc(sizeof(TRIE));
+
+	if(newTRIE == NULL)
+	{
+		return NULL;
+	}
+
+	newTRIE -> index = -1;
+	for(int i=0; i<MAX_DEGREE; i++)
+	{
+		newTRIE -> subtrees[i] = NULL;
+	}
+
+	return newTRIE;
+}
+
+/* Deletes all data in trie and recycles memory
+*/
+void trieDestroy( TRIE *root){
+	for(int i=0; i<MAX_DEGREE; i++)
+	{
+		if(root->subtrees[i] != NULL)
+		{
+			free(root->subtrees[i]);
+		}
+	}
+	free(root);
+}
+
+/* Inserts new entry into the trie
+	return	1 success
+			0 failure
+*/
+// 주의! 엔트리를 중복 삽입하지 않도록 체크해야 함
+// 대소문자를 소문자로 통일하여 삽입
+// 영문자와 EOW 외 문자를 포함하는 문자열은 삽입하지 않음
+// TODO
+int trieInsert( TRIE *root, char *str, int dic_index);
+
+/* Retrieve trie for the requested key
+	return	index in dictionary (trie) if key found
+			-1 key not found
+*/
+// TODO
+int trieSearch( TRIE *root, char *str);
+
+/* prints all entries in trie using preorder traversal
+*/
+// TODO
+void trieList( TRIE *root, char *dic[]);
+
+/* prints all entries starting with str (as prefix) in trie
+	ex) "abb" -> "abbas", "abbasid", "abbess", ...
+	this function uses trieList function
+*/
+// TODO
+void triePrefixList( TRIE *root, char *str, char *dic[]);
+
+/* makes permuterms for given str
+	ex) "abc" -> "abc$", "bc$a", "c$ab", "$abc"
+	return	number of permuterms
+*/
+// TODO
+int make_permuterms( char *str, char *permuterms[]);
+
+/* recycles memory for permuterms
+*/
+// TODO
+void clear_permuterms( char *permuterms[], int size);
+
+/* wildcard search
+	ex) "ab*", "*ab", "a*b", "*ab*"
+	this function uses triePrefixList function
+*/
+// TODO
+void trieSearchWildcard( TRIE *root, char *str, char *dic[]);
