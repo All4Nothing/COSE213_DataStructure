@@ -97,21 +97,21 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	// trie = trieCreateNode(); // original trie
-	// permute_trie = trieCreateNode(); // trie for permuterm index
+	trie = trieCreateNode();		 // original trie
+	permute_trie = trieCreateNode(); // trie for permuterm index
 
 	while (fscanf(fp, "%s", str) != EOF)
 	{
-		// ret = trieInsert( trie, str, index);
+		ret = trieInsert(trie, str, index);
 
-		// if (ret)
+		if (ret)
 		{
-			// num_p = make_permuterms( str, permuterms);
+			num_p = make_permuterms(str, permuterms);
 
-			// for (int i = 0; i < num_p; i++)
-			// trieInsert( permute_trie, permuterms[i], index);
+			for (int i = 0; i < num_p; i++)
+				trieInsert(permute_trie, permuterms[i], index);
 
-			// clear_permuterms( permuterms, num_p);
+			clear_permuterms(permuterms, num_p);
 
 			dic[index++] = strdup(str);
 		}
@@ -119,19 +119,23 @@ int main(int argc, char **argv)
 
 	fclose(fp);
 
+	printf("\nQuery: ");
 	while (fscanf(stdin, "%s", str) != EOF)
 	{
+
 		// wildcard search term
 		if (strchr(str, '*'))
 		{
-			// trieSearchWildcard( permute_trie, str, dic);
+			trieSearchWildcard(permute_trie, str, dic);
 		}
 		// keyword search
 		else
 		{
-			// ret = trieSearch( trie, str);
-			// if (ret == -1) printf( "[%s] not found!\n", str);
-			// else printf( "[%s] found!\n", dic[ret]);
+			ret = trieSearch(trie, str);
+			if (ret == -1)
+				printf("[%s] not found!\n", str);
+			else
+				printf("[%s] found!\n", dic[ret]);
 		}
 		printf("\nQuery: ");
 	}
@@ -139,8 +143,8 @@ int main(int argc, char **argv)
 	for (int i = 0; i < index; i++)
 		free(dic[i]);
 
-	// trieDestroy( trie);
-	// trieDestroy( permute_trie);
+	trieDestroy(trie);
+	trieDestroy(permute_trie);
 
 	return 0;
 }
@@ -176,7 +180,7 @@ void trieDestroy(TRIE *root)
 	{
 		if (root->subtrees[i] != NULL)
 		{
-			free(root->subtrees[i]);
+			trieDestroy(root->subtrees[i]);
 		}
 	}
 	free(root);
@@ -192,11 +196,12 @@ void trieDestroy(TRIE *root)
 int trieInsert(TRIE *root, char *str, int dic_index)
 {
 	TRIE *node = root;
+	int Index = 0;
 
 	// isupper, tolower
 	for (int i = 0; i < strlen(str); i++)
 	{
-		if (isupper(str[i]) == 0)
+		if (isupper(str[i]) != 0)
 		{
 			str[i] = tolower(str[i]);
 		}
@@ -210,13 +215,13 @@ int trieInsert(TRIE *root, char *str, int dic_index)
 	// insert
 	for (int i = 0; i < strlen(str); i++)
 	{
-		int index = getIndex(str[i]);
+		Index = getIndex(str[i]);
 
-		if (node->subtrees[index] == NULL)
+		if (node->subtrees[Index] == NULL)
 		{
-			node->subtrees[index] = trieCreateNode();
+			node->subtrees[Index] = trieCreateNode();
 		}
-		node = node->subtrees[index];
+		node = node->subtrees[Index];
 	}
 
 	// check overlap
@@ -226,6 +231,8 @@ int trieInsert(TRIE *root, char *str, int dic_index)
 	}
 
 	node->index = dic_index;
+
+	return 1;
 }
 
 /* Retrieve trie for the requested key
@@ -283,14 +290,16 @@ void triePrefixList(TRIE *root, char *str, char *dic[])
 
 	for (int i = 0; i < strlen(str); i++)
 	{
+		node = node->subtrees[getIndex(str[i])];
 		if (node == NULL)
 		{
 			return;
 		}
-		else
-		{
-			node = node->subtrees[getIndex(i)];
-		}
+	}
+
+	if (node == NULL)
+	{
+		return;
 	}
 
 	trieList(node, dic);
@@ -300,28 +309,32 @@ void triePrefixList(TRIE *root, char *str, char *dic[])
 	ex) "abc" -> "abc$", "bc$a", "c$ab", "$abc"
 	return	number of permuterms
 */
-// TODO
-// FIXME
 int make_permuterms(char *str, char *permuterms[])
 {
-	char *per = str;
 	char temp;
-
-	per[strlen(str)] = '$';
-
-	permuterms[0] = strdup(str);
+	char *per = (char *)malloc(sizeof(char) * (strlen(str) + 2));
 
 	for (int i = 0; i < strlen(str); i++)
+	{
+		per[i] = str[i];
+	}
+	per[strlen(str)] = '$';
+	per[strlen(str) + 1] = 0;
+
+	permuterms[0] = strdup(per);
+
+	for (int i = 1; i <= strlen(str); i++)
 	{
 		temp = per[0];
 		for (int j = 0; j < strlen(str); j++)
 		{
-			per[j] = per[j + 1]; // memory 부족?
+			per[j] = per[j + 1];
 		}
 		per[strlen(str)] = temp;
 		permuterms[i] = strdup(per);
 	}
 
+	free(per);
 	return strlen(str) + 1;
 }
 
@@ -339,5 +352,48 @@ void clear_permuterms(char *permuterms[], int size)
 	ex) "ab*", "*ab", "a*b", "*ab*"
 	this function uses triePrefixList function
 */
-// TODO
-void trieSearchWildcard(TRIE *root, char *str, char *dic[]);
+// 나 천재인가?
+void trieSearchWildcard(TRIE *root, char *str, char *dic[])
+{
+
+	char *permuterms[100];
+	char *string;
+	int length = strlen(str);
+
+	int count = 0;
+	for (int i = 0; i < length; i++)
+	{
+		if (str[i] == '*')
+		{
+			count++;
+		}
+	}
+
+	if (count == 2)
+	{
+		string = str;
+		string++; // FIXME string++ 이용해서 나머지 코드 수정하기
+		string[strlen(string) - 1] = 0;
+		triePrefixList(root, string, dic);
+		return;
+	}
+
+	int num_p = make_permuterms(str, permuterms);
+
+	for (int i = 0; i <= length; i++)
+	{
+		string = permuterms[i];
+
+		if (string[length] == '*')
+		{
+			string[length] = 0;
+			break;
+		}
+	}
+
+	clear_permuterms(permuterms, num_p);
+
+	triePrefixList(root, string, dic);
+
+	return;
+}
