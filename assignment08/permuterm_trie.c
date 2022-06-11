@@ -372,7 +372,7 @@ void trieSearchWildcard(TRIE *root, char *str, char *dic[])
 	if (count == 2)
 	{
 		string = str;
-		string++; // FIXME string++ 이용해서 나머지 코드 수정하기
+		string++;
 		string[strlen(string) - 1] = 0;
 		triePrefixList(root, string, dic);
 		return;
@@ -391,9 +391,8 @@ void trieSearchWildcard(TRIE *root, char *str, char *dic[])
 		}
 	}
 
-	clear_permuterms(permuterms, num_p);
-
 	triePrefixList(root, string, dic);
+	clear_permuterms(permuterms, num_p);
 
 	return;
 }
